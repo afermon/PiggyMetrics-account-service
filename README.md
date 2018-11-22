@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.com/afermon/PiggyMetrics-account-service.svg?branch=master)](https://travis-ci.com/afermon/PiggyMetrics-account-service)
+[![CircleCI](https://circleci.com/gh/afermon/PiggyMetrics-account-service.svg?style=svg)](https://circleci.com/gh/afermon/PiggyMetrics-account-service)
 [![codecov](https://codecov.io/gh/afermon/PiggyMetrics-account-service/branch/master/graph/badge.svg)](https://codecov.io/gh/afermon/PiggyMetrics-account-service)
 [![GitHub license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/sqshq/PiggyMetrics/blob/master/LICENCE)
 
