@@ -36,7 +36,7 @@ public class AccountServiceTest {
 		initMocks(this);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
 	public void shouldFindByName() {
 
 		final Account account = new Account();
