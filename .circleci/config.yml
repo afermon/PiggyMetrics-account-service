@@ -43,10 +43,10 @@ jobs:
               --build-arg COMMIT_REF=${CIRCLE_SHA1} \
               --build-arg BUILD_DATE=`date -u +”%Y-%m-%dT%H:%M:%SZ”` \
               -t ${SERVICE_NAME} .
-            docker tag ${SERVICE_NAME} ${DOCKER_USER}/piggymetrics-${SERVICE_NAME}:${CIRCLE_SHA1} 
-            docker tag ${SERVICE_NAME} ${DOCKER_USER}/piggymetrics-${SERVICE_NAME}:latest   
-            docker push ${DOCKER_USER}/piggymetrics-${SERVICE_NAME}:${CIRCLE_SHA1}
-            docker push ${DOCKER_USER}/piggymetrics-${SERVICE_NAME}:latest
+            docker tag ${SERVICE_NAME} ${DOCKER_USER}/${IMAGE_NAME}:${CIRCLE_SHA1} 
+            docker tag ${SERVICE_NAME} ${DOCKER_USER}/${IMAGE_NAME}:latest   
+            docker push ${DOCKER_USER}/${IMAGE_NAME}:${CIRCLE_SHA1}
+            docker push ${DOCKER_USER}/${IMAGE_NAME}:latest
   deploy_gcp:
     docker:
       - image: google/cloud-sdk
@@ -71,13 +71,13 @@ jobs:
               --build-arg COMMIT_REF=${CIRCLE_SHA1} \
               --build-arg BUILD_DATE=`date -u +”%Y-%m-%dT%H:%M:%SZ”` \
               -t ${SERVICE_NAME} .
-            docker tag ${SERVICE_NAME} us.gcr.io/${GOOGLE_PROJECT_ID}/${SERVICE_NAME}:${CIRCLE_SHA1}
+            docker tag ${SERVICE_NAME} us.gcr.io/${GOOGLE_PROJECT_ID}/${IMAGE_NAME}:${CIRCLE_SHA1}
             gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://us.gcr.io
-            docker push us.gcr.io/${GOOGLE_PROJECT_ID}/${SERVICE_NAME}:${CIRCLE_SHA1}
+            docker push us.gcr.io/${GOOGLE_PROJECT_ID}/${IMAGE_NAME}:${CIRCLE_SHA1}
       - run:
           name: Deploy to Kubernetes
           command: |
-            kubectl patch deployment "$SERVICE_NAME" -p '{"spec":{"template":{"spec":{"containers":[{"name":"'"$SERVICE_NAME"'","image":"us.gcr.io/'"$GOOGLE_PROJECT_ID"'/'"$SERVICE_NAME"':'"$CIRCLE_SHA1"'"}]}}}}'
+            kubectl patch deployment "$SERVICE_NAME" -p '{"spec":{"template":{"spec":{"containers":[{"name":"'"$SERVICE_NAME"'","image":"us.gcr.io/'"$GOOGLE_PROJECT_ID"'/'"$IMAGE_NAME"':'"$CIRCLE_SHA1"'"}]}}}}'
 workflows:
   version: 2
   test_build_and_deploy:
