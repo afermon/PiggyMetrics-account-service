@@ -43,9 +43,10 @@ jobs:
               --build-arg COMMIT_REF=${CIRCLE_SHA1} \
               --build-arg BUILD_DATE=`date -u +”%Y-%m-%dT%H:%M:%SZ”` \
               -t ${SERVICE_NAME} .
-            docker tag ${SERVICE_NAME} ${DOCKER_USER}/${SERVICE_NAME}:${CIRCLE_SHA1} 
-            docker tag ${SERVICE_NAME} ${DOCKER_USER}/${SERVICE_NAME}:latest   
-            docker push ${DOCKER_USER}/${SERVICE_NAME}:${CIRCLE_SHA1}
+            docker tag ${SERVICE_NAME} ${DOCKER_USER}/piggymetrics-${SERVICE_NAME}:${CIRCLE_SHA1} 
+            docker tag ${SERVICE_NAME} ${DOCKER_USER}/piggymetrics-${SERVICE_NAME}:latest   
+            docker push ${DOCKER_USER}/piggymetrics-${SERVICE_NAME}:${CIRCLE_SHA1}
+            docker push ${DOCKER_USER}/piggymetrics-${SERVICE_NAME}:latest
   deploy_gcp:
     docker:
       - image: google/cloud-sdk
