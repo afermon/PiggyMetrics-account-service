@@ -28,10 +28,11 @@ jobs:
             - account-service.jar
   deploy_registry:
     docker:
-      - image: google/cloud-sdk
+      - image: docker:18.06.1-ce-git
     working_directory: ~/repo
     steps:
       - checkout
+      - setup_remote_docker
       - attach_workspace:
           at: target
       - run:
@@ -42,8 +43,9 @@ jobs:
               --build-arg COMMIT_REF=${CIRCLE_SHA1} \
               --build-arg BUILD_DATE=`date -u +”%Y-%m-%dT%H:%M:%SZ”` \
               -t ${SERVICE_NAME} .
-            docker tag ${SERVICE_NAME} ${DOCKER_REGISTRY}/${SERVICE_NAME}:${CIRCLE_SHA1}   
-            docker push ${DOCKER_REGISTRY}/${SERVICE_NAME}:${CIRCLE_SHA1}
+            docker tag ${SERVICE_NAME} ${DOCKER_USER}/${SERVICE_NAME}:${CIRCLE_SHA1} 
+            docker tag ${SERVICE_NAME} ${DOCKER_USER}/${SERVICE_NAME}:latest   
+            docker push ${DOCKER_USER}/${SERVICE_NAME}:${CIRCLE_SHA1}
   deploy_gcp:
     docker:
       - image: google/cloud-sdk
