@@ -27,12 +27,20 @@ jobs:
           key: v1-dependencies-{{ checksum "pom.xml" }}
         
       # run tests!
-      - run: mvn test
+      - run: mvn package
+      # Persist the specified paths
+      - persist_to_workspace:
+          root: target
+          paths:
+            - account-service.jar
   deploy_gcp:
     docker:
       - image: google/cloud-sdk
+    working_directory: ~/repo
     steps:
       - checkout
+      - attach_workspace:
+          at: target
       - run:
           name: Setup Google Cloud SDK
           command: |
