@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  test:
+  build:
     docker:
       - image: circleci/openjdk:8u171-jdk
     working_directory: ~/repo
@@ -26,6 +26,24 @@ jobs:
           root: target
           paths:
             - account-service.jar
+  deploy_registry:
+    docker:
+      - image: google/cloud-sdk
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - attach_workspace:
+          at: target
+      - run:
+          name: Docker build and push
+          command: |
+            docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}
+            docker build \
+              --build-arg COMMIT_REF=${CIRCLE_SHA1} \
+              --build-arg BUILD_DATE=`date -u +”%Y-%m-%dT%H:%M:%SZ”` \
+              -t ${SERVICE_NAME} .
+            docker tag ${SERVICE_NAME} ${DOCKER_REGISTRY}/${SERVICE_NAME}:${CIRCLE_SHA1}   
+            docker push ${DOCKER_REGISTRY}/${SERVICE_NAME}:${CIRCLE_SHA1}
   deploy_gcp:
     docker:
       - image: google/cloud-sdk
@@ -61,10 +79,21 @@ workflows:
   version: 2
   test_build_and_deploy:
     jobs:
-      - test
+      - build
+      - deploy_registry:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+      - request-testing:
+          type: approval
+          requires:
+            - build
       - deploy_gcp:
           requires:
-            - test
+            - build
+            - request-testing
           filters:
             branches:
               only: master
