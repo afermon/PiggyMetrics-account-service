@@ -4,31 +4,24 @@ jobs:
     docker:
       - image: circleci/openjdk:8u171-jdk
     working_directory: ~/repo
-
     environment:
-      # JVM maximum heap limit
       MAVEN_OPTS: -Xmx3200m
-    
     steps:
       - checkout
-
-      # Download and cache dependencies
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "pom.xml" }}
-          # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
-
       - run: mvn dependency:go-offline
-
       - save_cache:
           paths:
             - ~/.m2
           key: v1-dependencies-{{ checksum "pom.xml" }}
-        
-      # run tests!
+      - run:
+          name: Codecov
+          command: |
+            bash <(curl -s https://codecov.io/bash)
       - run: mvn package
-      # Persist the specified paths
       - persist_to_workspace:
           root: target
           paths:
@@ -38,7 +31,6 @@ jobs:
       - image: google/cloud-sdk
     working_directory: ~/repo
     steps:
-      - checkout
       - attach_workspace:
           at: target
       - run:
@@ -48,7 +40,7 @@ jobs:
             gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
             gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
             gcloud --quiet config set compute/zone ${GOOGLE_COMPUTE_ZONE}
-            #gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
+            gcloud --quiet container clusters get-credentials ${GOOGLE_CLUSTER_NAME}
       - setup_remote_docker
       - run:
           name: Docker build and push
@@ -63,10 +55,7 @@ jobs:
       - run:
           name: Deploy to Kubernetes
           command: |
-            envsubst < ${HOME}/project/k8s.yml > ${HOME}/patched_k8s.yml
-            kubectl apply -f ${HOME}/patched_k8s.yml
-            kubectl rollout status deployment/${SERVICE_NAME}
-            kubectl patch deployment docker-hello-google -p '{"spec":{"template":{"spec":{"containers":[{"name":"docker-hello-google","image":"us.gcr.io/circle-ctl-test/hello:'"$CIRCLE_SHA1"'"}]}}}}'
+            kubectl patch deployment "$SERVICE_NAME" -p '{"spec":{"template":{"spec":{"containers":[{"name":"'"$SERVICE_NAME"'","image":"us.gcr.io/'"$GOOGLE_PROJECT_ID"'/'"$SERVICE_NAME"':'"$CIRCLE_SHA1"'"}]}}}}'
 workflows:
   version: 2
   test_build_and_deploy:
