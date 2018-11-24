@@ -93,6 +93,9 @@ workflows:
           type: approval
           requires:
             - build
+          filters:
+            branches:
+              only: master
       - deploy_gcp:
           requires:
             - build
