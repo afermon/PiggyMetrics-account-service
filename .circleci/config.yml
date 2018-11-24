@@ -17,11 +17,11 @@ jobs:
           paths:
             - ~/.m2
           key: v1-dependencies-{{ checksum "pom.xml" }}
+      - run: mvn package
       - run:
           name: Codecov
           command: |
             bash <(curl -s https://codecov.io/bash)
-      - run: mvn package
       - persist_to_workspace:
           root: target
           paths:
